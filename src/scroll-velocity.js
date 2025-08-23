@@ -7,6 +7,7 @@
 
 	key differences vs your recent "new" version:
 	- uses delta-based sampling by default (like the older code) for that immediate, punchy feel
+	- new 'hybrid' mode adapts sampling based on event timing for mobile-optimized smoothness
 	- normalization is relative to maxVelocity (not a fixed divisor), so [-1..1] matches your configured clamp
 	- writes extra css vars: --scroll-velocity-abs, --scroll-velocity-pow, --scroll-velocity-raw
 	- respects prefers-reduced-motion
@@ -16,7 +17,7 @@
 	import { ScrollVelocity } from './scroll-velocity-loose.js';
 	const sv = new ScrollVelocity({
 		target: document.body,   // element that will receive the css vars
-		sampleMode: 'delta',     // 'delta' | 'time' (time = px/ms); use 'delta' for older feel
+		sampleMode: 'delta',     // 'delta' | 'time' | 'hybrid' (hybrid adapts based on timing)
 		dampening: 0.35,         // higher = chases peaks faster (snappier), lower = smoother/laggier
 		friction: 0.92,          // how much velocity persists per frame (0..1)
 		attraction: 0.96,        // gentle pull toward zero each frame (0..1)
@@ -32,7 +33,7 @@
 /**
  * @typedef {Object} ScrollVelocityOptions
  * @property {HTMLElement} [target=document.body] element to receive css variables
- * @property {('delta'|'time')} [sampleMode='delta'] how to sample scroll input; 'delta' mimics the old feel
+ * @property {('delta'|'time'|'hybrid')} [sampleMode='delta'] how to sample scroll input; 'delta' mimics the old feel, 'hybrid' adapts based on event timing
  * @property {number} [dampening=0.35] blend factor toward target; higher chases peaks faster
  * @property {number} [friction=0.92] multiplicative decay per frame (0..1)
  * @property {number} [attraction=0.96] multiplicative pull toward zero per frame (0..1)
@@ -188,6 +189,25 @@ export class ScrollVelocity {
 			instantaneous = deltaT > 0 ? deltaY / deltaT : 0; // px per ms
 			// scale up to be comparable with old raw deltas so the numbers feel punchy
 			instantaneous *= 12; // tuning factor; adjust to taste
+		} else if (this.sampleMode === "hybrid") {
+			// hybrid: adaptive sampling based on event timing characteristics
+			const cappedDeltaT = Math.max(deltaT, 4); // prevent extreme divisions
+			const filteredDeltaY = Math.abs(deltaY) < 0.3 ? 0 : deltaY; // noise filter for mobile settling
+			
+			if (cappedDeltaT < 10) {
+				// rapid events: favor delta with slight time smoothing for responsiveness
+				instantaneous = filteredDeltaY * (0.85 + 0.15 * (cappedDeltaT / 10));
+			} else if (cappedDeltaT > 25) {
+				// slow events: time-based with adaptive scaling to prevent sluggishness
+				const adaptiveScale = 6 + Math.log(cappedDeltaT) * 2;
+				instantaneous = (filteredDeltaY / cappedDeltaT) * adaptiveScale;
+			} else {
+				// normal events: smooth blend of both approaches
+				const deltaRatio = (25 - cappedDeltaT) / 15; // 1.0→0.0 as time increases
+				const deltaComponent = filteredDeltaY * 0.7;
+				const timeComponent = (filteredDeltaY / cappedDeltaT) * 8;
+				instantaneous = deltaRatio * deltaComponent + (1 - deltaRatio) * timeComponent;
+			}
 		} else {
 			// delta-based: raw pixels since last event (older feel; punchy)
 			instantaneous = deltaY; // px

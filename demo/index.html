@@ -393,6 +393,7 @@
       <div class="section hi">
         <h1>🌪️ extreme velocity playground</h1>
         <p>scroll fast—sticky frames let you watch the effects amplify.</p>
+        <p>hybrid mode</p>
       </div>
 
       <!-- bubbles -->
@@ -551,9 +552,9 @@
       buildSkewGrid(document.getElementById('skewgrid'));
       buildDragGrid(document.getElementById('draggrid'));
 
-      // velocity tracker config (unchanged)
+      // velocity tracker config (test hybrid mode)
       const tracker = new ScrollVelocity({
-        sampleMode: 'time',
+        sampleMode: 'hybrid',
         dampening: 0.4,
         friction: 0.96,
         attraction: 0.96,
