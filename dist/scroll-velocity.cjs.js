@@ -1,15 +1,15 @@
 'use strict';
 
 /*
-	scroll-velocity (loose + responsive)
-	-----------------------------------
-	this is a drop-in velocity tracker tuned to feel looser and more responsive like your older manager.
-	it keeps the same basic physics: blend-to-target (dampening), then rAF decay (friction * attraction),
-	and exposes both a normalized css var and the raw velocity so css can decide how extreme to map things.
+	scroll-velocity (hybrid + responsive)
+	-------------------------------------
+	this is a drop-in velocity tracker with intuitive API and mobile-optimized smoothness.
+	it uses adaptive physics: blend-to-target (responsiveness), then rAF decay (friction * attraction),
+	and exposes multiple css vars for flexible animation control.
 
-	key differences vs your recent "new" version:
-	- uses delta-based sampling by default (like the older code) for that immediate, punchy feel
-	- new 'hybrid' mode adapts sampling based on event timing for mobile-optimized smoothness
+	key features in v0.2.0:
+	- uses 'hybrid' sampling by default - adapts based on event timing for mobile-optimized smoothness
+	- intuitive API: higher responsiveness = more responsive, higher attraction = stronger pull to zero
 	- normalization is relative to maxVelocity (not a fixed divisor), so [-1..1] matches your configured clamp
 	- writes extra css vars: --scroll-velocity-abs, --scroll-velocity-pow, --scroll-velocity-raw
 	- respects prefers-reduced-motion
@@ -19,10 +19,10 @@
 	import { ScrollVelocity } from './scroll-velocity-loose.js';
 	const sv = new ScrollVelocity({
 		target: document.body,   // element that will receive the css vars
-		sampleMode: 'delta',     // 'delta' | 'time' | 'hybrid' (hybrid adapts based on timing)
-		dampening: 0.35,         // higher = chases peaks faster (snappier), lower = smoother/laggier
+		sampleMode: 'hybrid',   // 'hybrid' | 'delta' | 'time' (hybrid is the recommended default)
+		responsiveness: 0.35,   // higher = more responsive to new scroll input, lower = smoother/laggier
 		friction: 0.92,          // how much velocity persists per frame (0..1)
-		attraction: 0.96,        // gentle pull toward zero each frame (0..1)
+		attraction: 0.04,        // strength of pull toward zero (0..1); higher = stronger pull
 		threshold: 0.02,         // stop when |velocity| < threshold
 		maxVelocity: 200,        // clamp for raw velocity; normalization uses this value
 		writeCSSVariables: true, // set to false if you only want programmatic reads
@@ -35,10 +35,10 @@
 /**
  * @typedef {Object} ScrollVelocityOptions
  * @property {HTMLElement} [target=document.body] element to receive css variables
- * @property {('delta'|'time'|'hybrid')} [sampleMode='delta'] how to sample scroll input; 'delta' mimics the old feel, 'hybrid' adapts based on event timing
- * @property {number} [dampening=0.35] blend factor toward target; higher chases peaks faster
+ * @property {('delta'|'time'|'hybrid')} [sampleMode='hybrid'] how to sample scroll input; 'hybrid' adapts based on event timing, 'delta' mimics the old feel
+ * @property {number} [responsiveness=0.35] how quickly it responds to new scroll input; higher = more responsive
  * @property {number} [friction=0.92] multiplicative decay per frame (0..1)
- * @property {number} [attraction=0.96] multiplicative pull toward zero per frame (0..1)
+ * @property {number} [attraction=0.04] how strongly it's pulled toward zero; higher = stronger pull to zero (0..1)
  * @property {number} [threshold=0.02] below this absolute velocity, snap to zero
  * @property {number} [maxVelocity=200] absolute clamp for the raw velocity (used for normalization)
  * @property {boolean} [writeCSSVariables=true] whether to write css custom properties
@@ -67,13 +67,13 @@ class ScrollVelocity {
 	constructor(options = {}) {
 		// config with loose, responsive defaults
 		this.target = options.target || document.body;
-		this.sampleMode = options.sampleMode || "delta";
-		this.dampening =
-			typeof options.dampening === "number" ? options.dampening : 0.35;
+		this.sampleMode = options.sampleMode || "hybrid";
+		this.responsiveness =
+			typeof options.responsiveness === "number" ? options.responsiveness : 0.35;
 		this.friction =
 			typeof options.friction === "number" ? options.friction : 0.92;
 		this.attraction =
-			typeof options.attraction === "number" ? options.attraction : 0.96;
+			typeof options.attraction === "number" ? options.attraction : 0.04;
 		this.threshold =
 			typeof options.threshold === "number" ? options.threshold : 0.02;
 		this.maxVelocity =
@@ -122,9 +122,12 @@ class ScrollVelocity {
 		if ("target" in nextOptions && nextOptions.target)
 			this.target = nextOptions.target;
 		if ("sampleMode" in nextOptions)
-			this.sampleMode = nextOptions.sampleMode || "delta";
-		if ("dampening" in nextOptions && typeof nextOptions.dampening === "number")
-			this.dampening = nextOptions.dampening;
+			this.sampleMode = nextOptions.sampleMode || "hybrid";
+		if ("responsiveness" in nextOptions && typeof nextOptions.responsiveness === "number")
+			this.responsiveness = nextOptions.responsiveness;
+	// backwards compatibility for old parameter name
+	if ("dampening" in nextOptions && typeof nextOptions.dampening === "number")
+			this.responsiveness = nextOptions.dampening;
 		if ("friction" in nextOptions && typeof nextOptions.friction === "number")
 			this.friction = nextOptions.friction;
 		if (
@@ -215,9 +218,9 @@ class ScrollVelocity {
 			instantaneous = deltaY; // px
 		}
 
-		// blend toward target (looser response uses higher dampening)
+		// blend toward target (higher responsiveness = faster response to new input)
 		const targetVelocity = this._velocity + instantaneous;
-		this._velocity += (targetVelocity - this._velocity) * this.dampening;
+		this._velocity += (targetVelocity - this._velocity) * this.responsiveness;
 		this._velocity = clamp(this._velocity, -this.maxVelocity, this.maxVelocity);
 
 		// make sure rAF loop is running
@@ -237,7 +240,7 @@ class ScrollVelocity {
 			)
 		) {
 			this._velocity *= this.friction;
-			this._velocity *= this.attraction;
+			this._velocity *= (1 - this.attraction); // inverted: higher attraction = stronger pull to zero
 			if (Math.abs(this._velocity) < this.threshold) this._velocity = 0;
 		}
 

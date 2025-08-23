@@ -552,14 +552,14 @@
       buildSkewGrid(document.getElementById('skewgrid'));
       buildDragGrid(document.getElementById('draggrid'));
 
-      // velocity tracker config (test hybrid mode)
+      // velocity tracker config (v0.2.0 API - responsive & smooth!)
       const tracker = new ScrollVelocity({
-        sampleMode: 'hybrid',
-        dampening: 0.4,
-        friction: 0.96,
-        attraction: 0.96,
-        threshold: 0.02,
-        maxVelocity: 200,
+        sampleMode: 'hybrid',        // adaptive sampling (now default!)
+        responsiveness: 0.7,         // very responsive to new input
+        friction: 0.95,              // good velocity persistence 
+        attraction: 0.15,            // gentle pull to zero (was 0.9 - too strong!)
+        threshold: 0.02,             // low threshold for smooth trailing
+        maxVelocity: 300,            // higher ceiling for more dramatic effects
       });
 
       // hud controls

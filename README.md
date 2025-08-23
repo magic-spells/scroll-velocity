@@ -41,10 +41,10 @@ import { ScrollVelocity } from '@magic-spells/scroll-velocity';
 
 const tracker = new ScrollVelocity({
   target: document.body,       // element that receives CSS variables
-  sampleMode: 'delta',         // 'delta' for punchy feel, 'time' for consistent velocity
-  dampening: 0.35,             // higher = snappier response to velocity changes
+  sampleMode: 'hybrid',        // 'hybrid' (adaptive), 'delta' (punchy), 'time' (consistent)
+  responsiveness: 0.35,        // higher = more responsive to scroll input
   friction: 0.95,              // velocity persistence per frame (0-1)
-  attraction: 0.96,            // pull toward zero each frame (0-1)
+  attraction: 0.04,            // pull toward zero strength (higher = stronger pull)
   threshold: 0.02,             // stop when velocity drops below this
   maxVelocity: 200,            // clamp raw velocity, used for normalization
   writeCSSVariables: true,     // set to false for programmatic-only usage
@@ -63,10 +63,10 @@ tracker.start();
 All options are optional with sensible defaults:
 
 - `target` _(HTMLElement)_ - Element to receive CSS variables (default: `document.body`)
-- `sampleMode` _('delta'|'time')_ - Sampling method; 'delta' for punchy old-school feel, 'time' for consistent px/ms
-- `dampening` _(number)_ - Blend factor toward target velocity; higher = snappier (default: 0.35)
+- `sampleMode` _('hybrid'|'delta'|'time')_ - Sampling method; 'hybrid' adapts based on timing (default), 'delta' for punchy feel, 'time' for consistent px/ms
+- `responsiveness` _(number)_ - How quickly it responds to scroll input; higher = more responsive (default: 0.35)
 - `friction` _(number)_ - Velocity decay per frame, 0-1 (default: 0.92)
-- `attraction` _(number)_ - Pull toward zero per frame, 0-1 (default: 0.96)
+- `attraction` _(number)_ - Pull toward zero strength; higher = stronger pull (default: 0.04)
 - `threshold` _(number)_ - Stop threshold for absolute velocity (default: 0.02)
 - `maxVelocity` _(number)_ - Clamp for raw velocity, used for normalization (default: 200)
 - `writeCSSVariables` _(boolean)_ - Whether to write CSS custom properties (default: true)
@@ -113,8 +113,8 @@ Use these properties to drive CSS animations:
 
 ## How It Works
 
-- **Smart Sampling**: Choose between delta-based sampling (punchy, immediate) or time-based sampling (consistent velocity regardless of scroll event frequency)
-- **Physics Simulation**: Applies dampening to chase velocity peaks, then friction and attraction-to-zero for natural decay
+- **Adaptive Hybrid Sampling**: Default 'hybrid' mode adapts based on scroll event timing for mobile-optimized smoothness, with fallback to 'delta' (punchy) or 'time' (consistent) modes
+- **Intuitive Physics**: Higher responsiveness = more responsive, higher attraction = stronger pull to zero - no more counterintuitive parameters!  
 - **Performance Optimized**: Uses `requestAnimationFrame` for smooth updates only when velocity is non-zero
 - **Accessibility**: Automatically disables velocity when user has `prefers-reduced-motion: reduce` set
 - **CSS-Driven Animations**: Exposes multiple velocity representations as CSS variables for GPU-accelerated animations
@@ -128,7 +128,7 @@ The physics simulation creates natural-feeling velocity curves that start respon
 ```javascript
 const tracker = new ScrollVelocity({
   maxVelocity: 150,
-  dampening: 0.4
+  responsiveness: 0.4
 });
 
 tracker.start();
@@ -147,10 +147,40 @@ requestAnimationFrame(onAnimationFrame);
 
 // Update settings at runtime
 tracker.setOptions({
-  dampening: 0.5,
+  responsiveness: 0.5,
   friction: 0.95
 });
 ```
+
+---
+
+## Breaking Changes (v0.2.0)
+
+**🚀 More Intuitive API!** We've made the parameter names much clearer:
+
+### Parameter Changes
+- ✅ `dampening` → `responsiveness` (same values, clearer meaning)
+- ✅ `attraction` behavior inverted (higher = stronger pull to zero)
+- ✅ `sampleMode: 'hybrid'` is now the default (was 'delta')
+
+### Migration Guide
+```javascript
+// OLD (v0.1.0)
+new ScrollVelocity({
+  sampleMode: 'delta',    // was default
+  dampening: 0.6,         // confusing name
+  attraction: 0.2,        // low = strong pull (backwards!)
+});
+
+// NEW (v0.2.0) 
+new ScrollVelocity({
+  sampleMode: 'hybrid',   // new default - adaptive!
+  responsiveness: 0.6,    // same value, clearer name
+  attraction: 0.8,        // high = strong pull (intuitive!)
+});
+```
+
+**Backwards Compatibility**: The old `dampening` parameter still works but is deprecated. Update your code to use `responsiveness` instead.
 
 ---
 
