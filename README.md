@@ -9,7 +9,7 @@ High-performance scroll velocity tracker with physics-based friction and CSS var
 - ⚡ **High-performance tracking** using `requestAnimationFrame` (no scroll event performance issues)
 - 🎯 **Physics-based simulation** with configurable dampening, friction, and attraction to zero
 - 🕵️‍♂️ **Smart sampling modes** - delta-based for punchy feel or time-based for consistent velocity
-- 🌊 **Multiple CSS variables** exposed: normalized, absolute, power-curve, and raw velocity values  
+- 🌊 **Multiple CSS variables** exposed: normalized, absolute, power-curve, and raw velocity values
 - 🌐 **Framework agnostic** — works with any frontend framework or vanilla JS
 - 📦 **Lightweight & zero dependencies** - Optimized for performance
 - 🔧 **Simple API** with start/stop controls and runtime option updates
@@ -40,15 +40,15 @@ Create and start the velocity tracker:
 import { ScrollVelocity } from '@magic-spells/scroll-velocity';
 
 const tracker = new ScrollVelocity({
-  target: document.body,     // element that receives CSS variables
-  sampleMode: 'delta',       // 'delta' for punchy feel, 'time' for consistent velocity
-  dampening: 0.35,           // higher = snappier response to velocity changes
-  friction: 0.92,            // velocity persistence per frame (0-1)
-  attraction: 0.96,          // pull toward zero each frame (0-1) 
-  threshold: 0.02,           // stop when velocity drops below this
-  maxVelocity: 200,          // clamp raw velocity, used for normalization
-  writeCSSVariables: true,   // set to false for programmatic-only usage
-  respectReducedMotion: true // disable when user prefers reduced motion
+  target: document.body,       // element that receives CSS variables
+  sampleMode: 'delta',         // 'delta' for punchy feel, 'time' for consistent velocity
+  dampening: 0.35,             // higher = snappier response to velocity changes
+  friction: 0.95,              // velocity persistence per frame (0-1)
+  attraction: 0.96,            // pull toward zero each frame (0-1)
+  threshold: 0.02,             // stop when velocity drops below this
+  maxVelocity: 200,            // clamp raw velocity, used for normalization
+  writeCSSVariables: true,     // set to false for programmatic-only usage
+  respectReducedMotion: true   // disable when user prefers reduced motion
 });
 
 tracker.start();
@@ -62,15 +62,15 @@ tracker.start();
 
 All options are optional with sensible defaults:
 
-- `target` *(HTMLElement)* - Element to receive CSS variables (default: `document.body`)
-- `sampleMode` *('delta'|'time')* - Sampling method; 'delta' for punchy old-school feel, 'time' for consistent px/ms
-- `dampening` *(number)* - Blend factor toward target velocity; higher = snappier (default: 0.35)
-- `friction` *(number)* - Velocity decay per frame, 0-1 (default: 0.92)
-- `attraction` *(number)* - Pull toward zero per frame, 0-1 (default: 0.96)
-- `threshold` *(number)* - Stop threshold for absolute velocity (default: 0.02)
-- `maxVelocity` *(number)* - Clamp for raw velocity, used for normalization (default: 200)
-- `writeCSSVariables` *(boolean)* - Whether to write CSS custom properties (default: true)
-- `respectReducedMotion` *(boolean)* - Disable when user prefers reduced motion (default: true)
+- `target` _(HTMLElement)_ - Element to receive CSS variables (default: `document.body`)
+- `sampleMode` _('delta'|'time')_ - Sampling method; 'delta' for punchy old-school feel, 'time' for consistent px/ms
+- `dampening` _(number)_ - Blend factor toward target velocity; higher = snappier (default: 0.35)
+- `friction` _(number)_ - Velocity decay per frame, 0-1 (default: 0.92)
+- `attraction` _(number)_ - Pull toward zero per frame, 0-1 (default: 0.96)
+- `threshold` _(number)_ - Stop threshold for absolute velocity (default: 0.02)
+- `maxVelocity` _(number)_ - Clamp for raw velocity, used for normalization (default: 200)
+- `writeCSSVariables` _(boolean)_ - Whether to write CSS custom properties (default: true)
+- `respectReducedMotion` _(boolean)_ - Disable when user prefers reduced motion (default: true)
 
 ### Public Methods
 
@@ -159,7 +159,7 @@ tracker.setOptions({
 Supports all modern browsers with `requestAnimationFrame` and `matchMedia`:
 
 - Chrome 10+
-- Firefox 4+  
+- Firefox 4+
 - Safari 6+
 - Edge 12+
 

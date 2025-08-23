@@ -1,577 +1,609 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>scroll velocity — extreme demo</title>
-        <style>
-            * {
-                box-sizing: border-box;
-            }
-            html,
-            body {
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                font-family:
-                    ui-sans-serif,
-                    -apple-system,
-                    Segoe UI,
-                    Roboto,
-                    Helvetica,
-                    Arial,
-                    "Apple Color Emoji",
-                    "Segoe UI Emoji";
-                background: radial-gradient(
-                    1200px 800px at 10% 10%,
-                    #1f2145 0%,
-                    #0f112b 40%,
-                    #090a1a 100%
-                );
-                color: #fff;
-                min-height: 100vh;
-                overflow-x: hidden;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scroll velocity — extreme demo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          ui-sans-serif,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          'Apple Color Emoji',
+          'Segoe UI Emoji';
+        background: radial-gradient(1200px 800px at 10% 10%, #1f2145 0%, #0f112b 40%, #090a1a 100%);
+        color: #fff;
+        min-height: 100vh;
+        overflow-x: hidden;
 
-                /* css variables driven by js */
-                --scroll-velocity: 0;
-                --scroll-velocity-abs: 0;
-                --scroll-velocity-pow: 0;
-                --scroll-velocity-raw: 0;
-            }
+        /* css variables driven by js */
+        --scroll-velocity: 0;
+        --scroll-velocity-abs: 0;
+        --scroll-velocity-pow: 0;
+        --scroll-velocity-raw: 0;
+      }
 
-            .container {
-                max-width: 1100px;
-                margin: 0 auto;
-                padding: 24px;
-            }
-            .section {
-                margin: 56px auto;
-                padding: 32px;
-                border-radius: 18px;
-                background: rgba(255, 255, 255, 0.06);
-                backdrop-filter: blur(6px);
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-            }
-            .hi {
-                text-align: center;
-                padding: 64px 24px;
-                border-radius: 20px;
-                background: linear-gradient(
-                    180deg,
-                    rgba(255, 255, 255, 0.08),
-                    rgba(255, 255, 255, 0.03)
-                );
-            }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      .section {
+        margin: 56px auto;
+        padding: 32px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+      }
+      .hi {
+        text-align: center;
+        padding: 64px 24px;
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      }
 
-            /* hud + controls */
-            .hud {
-                position: fixed;
-                top: 16px;
-                right: 16px;
-                z-index: 1000;
-                background: rgba(0, 0, 0, 0.75);
-                padding: 12px 14px;
-                border-radius: 12px;
-                font-family:
-                    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-                font-size: 12px;
-                line-height: 1.6;
-                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-            }
-            .hud b {
-                font-weight: 600;
-            }
-            .controls {
-                position: fixed;
-                bottom: 16px;
-                left: 16px;
-                z-index: 1000;
-                background: rgba(0, 0, 0, 0.75);
-                padding: 12px;
-                border-radius: 12px;
-                display: flex;
-                gap: 8px;
-            }
-            button {
-                background: #6d72ff;
-                color: #fff;
-                border: none;
-                border-radius: 8px;
-                padding: 8px 12px;
-                cursor: pointer;
-                font-weight: 600;
-            }
-            button:disabled {
-                background: #444;
-                cursor: not-allowed;
-            }
+      /* hud + controls */
+      .hud {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.75);
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      }
+      .hud b {
+        font-weight: 600;
+      }
+      .controls {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.75);
+        padding: 12px;
+        border-radius: 12px;
+        display: flex;
+        gap: 8px;
+      }
+      button {
+        background: #6d72ff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button:disabled {
+        background: #444;
+        cursor: not-allowed;
+      }
 
-            /* layout helpers */
-            .tall {
-                min-height: 300vh;
-                position: relative;
-            }
-            .sticky {
-                position: sticky;
-                top: 50px;
-            }
-            .sticky-bars {
-                top: 5px;
-            }
+      /* layout helpers */
+      .tall {
+        min-height: 400vh;
+        position: relative;
+      }
+      .sticky {
+        position: sticky;
+        top: 50px;
+      }
+      .sticky-bars {
+        top: 5px;
+      }
 
-            /* bubbles section */
-            .bubble-frame {
-                height: 70vh;
-                border-radius: 16px;
-                overflow: hidden;
-                background: linear-gradient(
-                    180deg,
-                    rgba(255, 255, 255, 0.04),
-                    rgba(255, 255, 255, 0.02)
-                );
-                position: relative;
-            }
-            .bubble {
-                --size: 80px;
-                position: absolute;
-                width: var(--size);
-                height: var(--size);
-                border-radius: 50%;
-                background:
-                    radial-gradient(
-                        circle at 30% 30%,
-                        rgba(255, 255, 255, 0.9),
-                        rgba(255, 255, 255, 0.55) 40%,
-                        rgba(255, 255, 255, 0.15) 65%,
-                        transparent 70%
-                    ),
-                    var(--fill, #ff7a7a);
-                box-shadow:
-                    0 12px 36px rgba(0, 0, 0, 0.35),
-                    inset 0 0 30px rgba(255, 255, 255, 0.35);
-                transform: translate(
-                        calc(var(--vx, 0px) * var(--scroll-velocity)),
-                        calc(var(--vy, 0px) * var(--scroll-velocity))
-                    )
-                    scale(
-                        calc(
-                            1 + var(--scroll-velocity-abs) *
-                                var(--scaleBoost, 1.3)
-                        )
-                    );
-                filter: blur(calc(var(--scroll-velocity-abs) * 10px))
-                    saturate(calc(1 + var(--scroll-velocity-abs) * 1.2));
-                transition:
-                    transform 0.06s ease-out,
-                    filter 0.06s ease-out;
-                will-change: transform, filter;
-            }
-            .b1 {
-                top: 14%;
-                left: 6%;
-                --vx: 260px;
-                --vy: -120px;
-                --fill: linear-gradient(135deg, #ff6b6b, #ffcc70);
-            }
-            .b2 {
-                top: 65%;
-                left: 14%;
-                --vx: 340px;
-                --vy: -180px;
-                --fill: linear-gradient(135deg, #4ecdc4, #45b7d1);
-                --size: 92px;
-            }
-            .b3 {
-                top: 40%;
-                left: 48%;
-                --vx: -200px;
-                --vy: 160px;
-                --fill: linear-gradient(135deg, #a18cd1, #fbc2eb);
-            }
-            .b4 {
-                top: 12%;
-                left: 76%;
-                --vx: -320px;
-                --vy: 220px;
-                --fill: linear-gradient(135deg, #ffd3a5, #fd9853);
-                --size: 96px;
-                --scaleBoost: 1.6;
-            }
-            .b5 {
-                top: 76%;
-                left: 78%;
-                --vx: -120px;
-                --vy: -240px;
-                --fill: linear-gradient(135deg, #89f7fe, #66a6ff);
-                --size: 72px;
-            }
+      /* bubbles section */
+      .bubble-frame {
+        height: 70vh;
+        border-radius: 16px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+        position: relative;
+      }
+      .bubble {
+        --size: 80px;
+        position: absolute;
+        width: var(--size);
+        height: var(--size);
+        border-radius: 50%;
+        background:
+          radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.9),
+            rgba(255, 255, 255, 0.55) 40%,
+            rgba(255, 255, 255, 0.15) 65%,
+            transparent 70%
+          ),
+          var(--fill, #ff7a7a);
+        box-shadow:
+          0 12px 36px rgba(0, 0, 0, 0.35),
+          inset 0 0 30px rgba(255, 255, 255, 0.35);
+        transform: translate(
+            calc(var(--vx, 0px) * var(--scroll-velocity)),
+            calc(var(--vy, 0px) * var(--scroll-velocity))
+          )
+          scale(calc(1 + var(--scroll-velocity-abs) * var(--scaleBoost, 1.3)));
+        filter: blur(calc(var(--scroll-velocity-abs) * 10px))
+          saturate(calc(1 + var(--scroll-velocity-abs) * 1.2));
+        transition:
+          transform 0.06s ease-out,
+          filter 0.06s ease-out;
+        will-change: transform, filter;
+      }
+      .b1 {
+        top: 14%;
+        left: 6%;
+        --vx: 260px;
+        --vy: -120px;
+        --fill: linear-gradient(135deg, #ff6b6b, #ffcc70);
+      }
+      .b2 {
+        top: 65%;
+        left: 14%;
+        --vx: 340px;
+        --vy: -180px;
+        --fill: linear-gradient(135deg, #4ecdc4, #45b7d1);
+        --size: 92px;
+      }
+      .b3 {
+        top: 40%;
+        left: 48%;
+        --vx: -200px;
+        --vy: 160px;
+        --fill: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      }
+      .b4 {
+        top: 12%;
+        left: 76%;
+        --vx: -320px;
+        --vy: 220px;
+        --fill: linear-gradient(135deg, #ffd3a5, #fd9853);
+        --size: 96px;
+        --scaleBoost: 1.6;
+      }
+      .b5 {
+        top: 76%;
+        left: 78%;
+        --vx: -120px;
+        --vy: -240px;
+        --fill: linear-gradient(135deg, #89f7fe, #66a6ff);
+        --size: 72px;
+      }
 
-            /* sticks section — stacked star: all rods overlap at center and spin the same (clockwise) with abs velocity; sensitivity increases per rod */
-            .sticks-frame {
-                height: 300px; /* fixed box height per request */
-                border-radius: 16px;
-                padding: 22px 16px;
-                background: linear-gradient(
-                    180deg,
-                    rgba(255, 255, 255, 0.04),
-                    rgba(255, 255, 255, 0.02)
-                );
-                position: relative;
-                overflow: hidden;
-            }
-            .sticks {
-                /* we layer rods on top of each other in the middle */
-                position: relative;
-                height: 100%;
-                width: 100%;
-            }
-            .stick {
-                /* each rod is absolutely centered; translate to center then rotate */
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 90%;
-                height: 18px;
-                border-radius: 999px;
-                background: linear-gradient(90deg, var(--c1), var(--c2));
-                transform-origin: 50% 50%;
-                /* use abs velocity so direction never flips; all rods spin the same way */
-                transform: translate(-50%, -50%)
-                    rotate(calc(var(--k, 1) * var(--scroll-velocity) * 160deg));
-                box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
-                filter: drop-shadow(
-                    0 0 calc(var(--k, 1) * var(--scroll-velocity) * 10px)
-                        rgba(255, 255, 255, 0.22)
-                );
-                transition:
-                    transform 0.08s cubic-bezier(0.7, 0, 0.4, 1.2),
-                    filter 0.08s cubic-bezier(0.7, 0, 0.4, 1.2);
-                will-change: transform, filter;
-                pointer-events: none; /* keep interactions clean */
-            }
-            /* color variety so the star spokes are readable */
-            .stick:nth-child(1) {
-                --c1: #ff7a7a;
-                --c2: #ffd36b;
-            }
-            .stick:nth-child(2) {
-                --c1: #4ecdc4;
-                --c2: #45b7d1;
-            }
-            .stick:nth-child(3) {
-                --c1: #a18cd1;
-                --c2: #fbc2eb;
-            }
-            .stick:nth-child(4) {
-                --c1: #ffd3a5;
-                --c2: #fd9853;
-            }
-            .stick:nth-child(5) {
-                --c1: #89f7fe;
-                --c2: #66a6ff;
-            }
-            .stick:nth-child(6) {
-                --c1: #96ceb4;
-                --c2: #c9f7a1;
-            }
+      /* sticks section — stacked star: all rods overlap at center and spin the same (clockwise) with abs velocity; sensitivity increases per rod */
+      .sticks-frame {
+        height: 300px; /* fixed box height per request */
+        border-radius: 16px;
+        padding: 22px 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+        position: relative;
+        overflow: hidden;
+      }
+      .sticks {
+        /* we layer rods on top of each other in the middle */
+        position: relative;
+        height: 100%;
+        width: 100%;
+      }
+      .stick {
+        /* each rod is absolutely centered; translate to center then rotate */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 90%;
+        height: 18px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--c1), var(--c2));
+        transform-origin: 50% 50%;
+        /* use abs velocity so direction never flips; all rods spin the same way */
+        transform: translate(-50%, -50%) rotate(calc(var(--k, 1) * var(--scroll-velocity) * 160deg));
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+        filter: drop-shadow(
+          0 0 calc(var(--k, 1) * var(--scroll-velocity) * 10px) rgba(255, 255, 255, 0.22)
+        );
+        transition:
+          transform 0.08s cubic-bezier(0.7, 0, 0.4, 1.2),
+          filter 0.08s cubic-bezier(0.7, 0, 0.4, 1.2);
+        will-change: transform, filter;
+        pointer-events: none; /* keep interactions clean */
+      }
+      /* color variety so the star spokes are readable */
+      .stick:nth-child(1) {
+        --c1: #ff7a7a;
+        --c2: #ffd36b;
+      }
+      .stick:nth-child(2) {
+        --c1: #4ecdc4;
+        --c2: #45b7d1;
+      }
+      .stick:nth-child(3) {
+        --c1: #a18cd1;
+        --c2: #fbc2eb;
+      }
+      .stick:nth-child(4) {
+        --c1: #ffd3a5;
+        --c2: #fd9853;
+      }
+      .stick:nth-child(5) {
+        --c1: #89f7fe;
+        --c2: #66a6ff;
+      }
+      .stick:nth-child(6) {
+        --c1: #96ceb4;
+        --c2: #c9f7a1;
+      }
 
-            /* bars section */
-            .bars-frame {
-                height: 300px;
-                border-radius: 16px;
-                padding: 16px;
-                background: linear-gradient(
-                    180deg,
-                    rgba(255, 255, 255, 0.05),
-                    rgba(255, 255, 255, 0.02)
-                );
-            }
-            .bars {
-                display: grid;
-                grid-template-columns: repeat(10, 1fr);
-                gap: 10px;
-                align-items: end;
-                height: 100%;
-            }
-            .bar {
-                border-radius: 14px;
-                background-color: hsl(
-                    0 100% calc(10% + var(--scroll-velocity-abs) * 55%)
-                );
-                height: calc(
-                    40px + var(--k, 1) * var(--scroll-velocity-abs) * 220px
-                );
-                transform: translateX(
-                        calc(var(--k, 1) * var(--scroll-velocity) * 8px)
-                    )
-                    skewY(calc(var(--k, 1) * var(--scroll-velocity) * -4deg));
-                box-shadow:
-                    0 8px 22px rgba(0, 0, 0, 0.35),
-                    inset 0 2px 10px rgba(255, 255, 255, 0.18);
-                transition:
-                    transform 0.05s ease-out,
-                    height 0.05s ease-out,
-                    background-color 0.05s ease-out;
-                will-change: transform, height, background-color;
-            }
+      /* bars section */
+      .bars-frame {
+        height: 300px;
+        border-radius: 16px;
+        padding: 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      }
+      .bars {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 10px;
+        align-items: end;
+        height: 100%;
+      }
+      .bar {
+        border-radius: 14px;
+        background-color: hsl(0 100% calc(10% + var(--scroll-velocity-abs) * 55%));
+        height: calc(40px + var(--k, 1) * var(--scroll-velocity-abs) * 220px);
+        transform: translateX(calc(var(--k, 1) * var(--scroll-velocity) * 8px))
+          skewY(calc(var(--k, 1) * var(--scroll-velocity) * -4deg));
+        box-shadow:
+          0 8px 22px rgba(0, 0, 0, 0.35),
+          inset 0 2px 10px rgba(255, 255, 255, 0.18);
+        transition:
+          transform 0.05s ease-out,
+          height 0.05s ease-out,
+          background-color 0.05s ease-out;
+        will-change: transform, height, background-color;
+      }
 
-            /* skew grid section */
-            .skew-frame {
-                height: 60vh;
-                border-radius: 16px;
-                padding: 16px;
-                background: linear-gradient(
-                    180deg,
-                    rgba(255, 255, 255, 0.06),
-                    rgba(255, 255, 255, 0.02)
-                );
-            }
-            .skew-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                grid-template-rows: repeat(3, 1fr);
-                gap: 14px;
-                height: 100%;
-            }
-            .skew-box {
-                border-radius: 14px;
-                background: var(--bg, #446);
-                transform: skewX(
-                    calc(var(--k, 1) * var(--scroll-velocity) * 18deg)
-                );
-                box-shadow:
-                    0 12px 28px rgba(0, 0, 0, 0.35),
-                    inset 0 0 26px rgba(255, 255, 255, 0.18);
-                transition: transform 0.05s ease-out;
-                will-change: transform;
-            }
+      /* skew grid section */
+      .skew-frame {
+        height: 60vh;
+        border-radius: 16px;
+        padding: 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      }
+      .skew-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 14px;
+        height: 100%;
+      }
+      .skew-box {
+        border-radius: 8px;
+        background: var(--bg, #446);
+        transform: skewX(calc(var(--k, 1) * var(--scroll-velocity) * 18deg));
+        box-shadow:
+          0 12px 28px rgba(0, 0, 0, 0.35),
+          inset 0 0 26px rgba(255, 255, 255, 0.18);
+        transition: transform 0.05s ease-out;
+        will-change: transform;
+      }
+      /* second row skews in opposite direction */
+      .skew-box:nth-child(6),
+      .skew-box:nth-child(7),
+      .skew-box:nth-child(8),
+      .skew-box:nth-child(9),
+      .skew-box:nth-child(10) {
+        transform: skewX(calc(var(--k, 1) * var(--scroll-velocity) * -18deg));
+      }
 
-            /* responsive tweaks */
-            @media (max-width: 720px) {
-                .bars-frame,
-                .skew-frame {
-                    height: 50vh;
-                }
-                /* keep sticks compact on mobile */
-                .sticks-frame {
-                    height: 300px;
-                }
-                .stick {
-                    height: 12px;
-                }
-                .bubble {
-                    --size: 68px;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="hud">
-            <div><b>velocity:</b> <span id="hud-v">0.000</span></div>
-            <div><b>css:</b> <span id="hud-c">0.000</span></div>
-            <div><b>status:</b> <span id="hud-s">stopped</span></div>
+      /* drag grid section */
+      .drag-frame {
+        height: 60vh;
+        border-radius: 16px;
+        padding: 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      }
+      .drag-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 18px;
+        height: 100%;
+        align-items: center;
+      }
+      .drag-box {
+        border-radius: 16px;
+        background: var(--bg, #446);
+        aspect-ratio: 1;
+        box-shadow:
+          0 12px 28px rgba(0, 0, 0, 0.35),
+          inset 0 0 26px rgba(255, 255, 255, 0.18);
+        transition: transform 0.06s ease-out;
+        will-change: transform;
+      }
+      /* row 1 stays in place */
+      .drag-box:nth-child(1),
+      .drag-box:nth-child(2),
+      .drag-box:nth-child(3) {
+        transform: translateY(0);
+      }
+      /* row 2 drags behind by up to 80px */
+      .drag-box:nth-child(4),
+      .drag-box:nth-child(5),
+      .drag-box:nth-child(6) {
+        transform: translateY(calc(var(--scroll-velocity) * 50px));
+      }
+      /* row 3 drags behind by up to 160px */
+      .drag-box:nth-child(7),
+      .drag-box:nth-child(8),
+      .drag-box:nth-child(9) {
+        transform: translateY(calc(var(--scroll-velocity) * 180px));
+      }
+
+      /* responsive tweaks */
+      @media (max-width: 720px) {
+        .bars-frame,
+        .skew-frame,
+        .drag-frame {
+          height: 50vh;
+        }
+        /* keep sticks compact on mobile */
+        .sticks-frame {
+          height: 300px;
+        }
+        .stick {
+          height: 12px;
+        }
+        .bubble {
+          --size: 68px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hud">
+      <div><b>velocity:</b> <span id="hud-v">0.000</span></div>
+      <div><b>css:</b> <span id="hud-c">0.000</span></div>
+      <div><b>status:</b> <span id="hud-s">stopped</span></div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-start">start</button><button id="btn-stop" disabled>stop</button>
+    </div>
+
+    <div class="container">
+      <div class="section hi">
+        <h1>🌪️ extreme velocity playground</h1>
+        <p>scroll fast—sticky frames let you watch the effects amplify.</p>
+      </div>
+
+      <!-- bubbles -->
+      <div class="section tall">
+        <h2>1) bubbles</h2>
+        <p>five bubbles reacting to velocity.</p>
+        <div class="sticky">
+          <div class="bubble-frame">
+            <div class="bubble b1"></div>
+            <div class="bubble b2"></div>
+            <div class="bubble b3"></div>
+            <div class="bubble b4"></div>
+            <div class="bubble b5"></div>
+          </div>
         </div>
+      </div>
 
-        <div class="controls">
-            <button id="btn-start">start</button
-            ><button id="btn-stop" disabled>stop</button>
+      <!-- sticks (star/asterisk effect) -->
+      <div class="section tall">
+        <h2>2) spinning sticks</h2>
+        <p>all six rods stack in the center and fan into a star as velocity rises.</p>
+        <div class="sticky">
+          <div class="sticks-frame">
+            <div class="sticks" id="sticks"></div>
+          </div>
         </div>
+      </div>
 
-        <div class="container">
-            <div class="section hi">
-                <h1>🌪️ extreme velocity playground</h1>
-                <p>
-                    scroll fast—sticky frames let you watch the effects amplify.
-                </p>
-            </div>
-
-            <!-- bubbles -->
-            <div class="section tall">
-                <h2>1) bubbles</h2>
-                <p>five bubbles reacting to velocity.</p>
-                <div class="sticky">
-                    <div class="bubble-frame">
-                        <div class="bubble b1"></div>
-                        <div class="bubble b2"></div>
-                        <div class="bubble b3"></div>
-                        <div class="bubble b4"></div>
-                        <div class="bubble b5"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- sticks (star/asterisk effect) -->
-            <div class="section tall">
-                <h2>2) stick garden</h2>
-                <p>
-                    all six rods stack in the center and fan into a star as
-                    velocity rises.
-                </p>
-                <div class="sticky">
-                    <div class="sticks-frame">
-                        <div class="sticks" id="sticks"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- bars -->
-            <div class="section tall">
-                <h2>3) velocity bars</h2>
-                <p>
-                    row of ten bars: left = mellow, right = wild; color goes
-                    redder with speed.
-                </p>
-                <div class="sticky-bars sticky">
-                    <div class="bars-frame">
-                        <div class="bars" id="bars"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- skew grid -->
-            <div class="section tall">
-                <h2>4) skew grid</h2>
-                <p>3×5 blocks skew left/right by direction.</p>
-                <div class="sticky">
-                    <div class="skew-frame">
-                        <div class="skew-grid" id="skewgrid"></div>
-                    </div>
-                </div>
-            </div>
+      <!-- bars -->
+      <div class="section tall">
+        <h2>3) velocity bars</h2>
+        <p>row of ten bars: left = mellow, right = wild; color goes redder with speed.</p>
+        <div class="sticky-bars sticky">
+          <div class="bars-frame">
+            <div class="bars" id="bars"></div>
+          </div>
         </div>
+      </div>
 
-        <script type="module">
-            import { ScrollVelocity } from "./scroll-velocity.esm.js";
+      <!-- skew grid -->
+      <div class="section tall">
+        <h2>4) skew grid</h2>
+        <p>3×5 blocks skew left/right by direction.</p>
+        <div class="sticky">
+          <div class="skew-frame">
+            <div class="skew-grid" id="skewgrid"></div>
+          </div>
+        </div>
+      </div>
 
-            /**
-             * creates six rods stacked in the center; each has a higher sensitivity factor
-             * @param {HTMLElement} host - target container for the rods
-             */
-            function buildSticks(host) {
-                // sensitivity ramps to exaggerate the star as speed increases
-                const factors = [0.6, 0.9, 1.15, 1.4, 1.7, 2.0];
-                for (let i = 0; i < 6; i++) {
-                    const el = document.createElement("div");
-                    el.className = "stick";
-                    el.style.setProperty("--k", String(factors[i]));
-                    host.appendChild(el);
-                }
-            }
+      <!-- drag grid -->
+      <div class="section tall">
+        <h2>5) drag grid</h2>
+        <p>
+          3×3 squares where lower rows drag behind when scrolling down, compress when scrolling up.
+        </p>
+        <div class="sticky">
+          <div class="drag-frame">
+            <div class="drag-grid" id="draggrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            /**
-             * creates the velocity bars (unchanged)
-             * @param {HTMLElement} host
-             */
-            function buildBars(host) {
-                const count = 10;
-                for (let i = 0; i < count; i++) {
-                    const el = document.createElement("div");
-                    el.className = "bar";
-                    const k = 0.6 + (i / (count - 1)) * (1.5 - 0.6);
-                    el.style.setProperty("--k", String(k.toFixed(3)));
-                    host.appendChild(el);
-                }
-            }
+    <script type="module">
+      import { ScrollVelocity } from './scroll-velocity.esm.js';
 
-            /**
-             * creates a 3x5 skew grid (unchanged)
-             * @param {HTMLElement} host
-             */
-            function buildSkewGrid(host) {
-                const palette = [
-                    "#ff7a7a",
-                    "#ffd36b",
-                    "#4ecdc4",
-                    "#45b7d1",
-                    "#a18cd1",
-                    "#fbc2eb",
-                    "#ffd3a5",
-                    "#fd9853",
-                    "#89f7fe",
-                    "#66a6ff",
-                    "#96ceb4",
-                    "#c9f7a1",
-                    "#e1a1f7",
-                    "#f7a1c1",
-                    "#a1e1f7",
-                ];
-                for (let i = 0; i < 15; i++) {
-                    const el = document.createElement("div");
-                    el.className = "skew-box";
-                    el.style.setProperty("--bg", palette[i % palette.length]);
-                    el.style.setProperty("--k", String(0.8 + 0.02 * i));
-                    host.appendChild(el);
-                }
-            }
+      /**
+       * creates six rods stacked in the center; each has a higher sensitivity factor
+       * @param {HTMLElement} host - target container for the rods
+       */
+      function buildSticks(host) {
+        // sensitivity ramps to exaggerate the star as speed increases
+        const factors = [0.2, 0.4, 0.6, 0.8, 1.0, 1.2];
+        for (let i = 0; i < 6; i++) {
+          const el = document.createElement('div');
+          el.className = 'stick';
+          el.style.setProperty('--k', String(factors[i]));
+          host.appendChild(el);
+        }
+      }
 
-            // mount sections
-            buildSticks(document.getElementById("sticks"));
-            buildBars(document.getElementById("bars"));
-            buildSkewGrid(document.getElementById("skewgrid"));
+      /**
+       * creates the velocity bars (unchanged)
+       * @param {HTMLElement} host
+       */
+      function buildBars(host) {
+        const count = 10;
+        for (let i = 0; i < count; i++) {
+          const el = document.createElement('div');
+          el.className = 'bar';
+          const k = 0.6 + (i / (count - 1)) * (1.5 - 0.6);
+          el.style.setProperty('--k', String(k.toFixed(3)));
+          host.appendChild(el);
+        }
+      }
 
-            // velocity tracker config (unchanged)
-            const tracker = new ScrollVelocity({
-                sampleMode: "delta",
-                dampening: 0.35,
-                friction: 0.92,
-                attraction: 0.96,
-                threshold: 0.02,
-                maxVelocity: 200,
-            });
+      /**
+       * creates a 3x5 skew grid (unchanged)
+       * @param {HTMLElement} host
+       */
+      function buildSkewGrid(host) {
+        const palette = [
+          '#ff7a7a',
+          '#ffd36b',
+          '#4ecdc4',
+          '#45b7d1',
+          '#a18cd1',
+          '#fbc2eb',
+          '#ffd3a5',
+          '#fd9853',
+          '#89f7fe',
+          '#66a6ff',
+          '#96ceb4',
+          '#c9f7a1',
+          '#e1a1f7',
+          '#f7a1c1',
+          '#a1e1f7',
+        ];
+        for (let i = 0; i < 15; i++) {
+          const el = document.createElement('div');
+          el.className = 'skew-box';
+          el.style.setProperty('--bg', palette[i % palette.length]);
+          el.style.setProperty('--k', String(0.8 + 0.02 * i));
+          host.appendChild(el);
+        }
+      }
 
-            // hud controls
-            const hudV = document.getElementById("hud-v");
-            const hudC = document.getElementById("hud-c");
-            const hudS = document.getElementById("hud-s");
-            const btnStart = document.getElementById("btn-start");
-            const btnStop = document.getElementById("btn-stop");
+      /**
+       * creates a 3x3 drag grid
+       * @param {HTMLElement} host
+       */
+      function buildDragGrid(host) {
+        const palette = [
+          '#ff7a7a',
+          '#ffd36b',
+          '#4ecdc4',
+          '#45b7d1',
+          '#a18cd1',
+          '#fbc2eb',
+          '#ffd3a5',
+          '#fd9853',
+          '#89f7fe',
+        ];
+        for (let i = 0; i < 9; i++) {
+          const el = document.createElement('div');
+          el.className = 'drag-box';
+          el.style.setProperty('--bg', palette[i]);
+          host.appendChild(el);
+        }
+      }
 
-            btnStart.addEventListener("click", () => {
-                tracker.start();
-                hudS.textContent = "active";
-                btnStart.disabled = true;
-                btnStop.disabled = false;
-            });
-            btnStop.addEventListener("click", () => {
-                tracker.stop();
-                hudS.textContent = "stopped";
-                btnStart.disabled = false;
-                btnStop.disabled = true;
-            });
+      // mount sections
+      buildSticks(document.getElementById('sticks'));
+      buildBars(document.getElementById('bars'));
+      buildSkewGrid(document.getElementById('skewgrid'));
+      buildDragGrid(document.getElementById('draggrid'));
 
-            // start active
-            tracker.start();
-            hudS.textContent = "active";
-            btnStart.disabled = true;
-            btnStop.disabled = false;
+      // velocity tracker config (unchanged)
+      const tracker = new ScrollVelocity({
+        sampleMode: 'delta',
+        dampening: 0.35,
+        friction: 0.96,
+        attraction: 0.96,
+        threshold: 0.02,
+        maxVelocity: 200,
+      });
 
-            /* push velocity values to css variables on every frame */
-            function raf() {
-                const v = tracker.getVelocity();
-                const n = tracker.getNormalizedVelocity();
-                const a = Math.abs(n);
-                const pow = Math.min(1, Math.pow(a, 0.7) * 1.35);
+      // hud controls
+      const hudV = document.getElementById('hud-v');
+      const hudC = document.getElementById('hud-c');
+      const hudS = document.getElementById('hud-s');
+      const btnStart = document.getElementById('btn-start');
+      const btnStop = document.getElementById('btn-stop');
 
-                document.body.style.setProperty(
-                    "--scroll-velocity",
-                    n.toFixed(4),
-                );
-                document.body.style.setProperty(
-                    "--scroll-velocity-abs",
-                    a.toFixed(4),
-                );
-                document.body.style.setProperty(
-                    "--scroll-velocity-pow",
-                    pow.toFixed(4),
-                );
+      btnStart.addEventListener('click', () => {
+        tracker.start();
+        hudS.textContent = 'active';
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+      });
+      btnStop.addEventListener('click', () => {
+        tracker.stop();
+        hudS.textContent = 'stopped';
+        btnStart.disabled = false;
+        btnStop.disabled = true;
+      });
 
-                hudV.textContent = v.toFixed(3);
-                hudC.textContent = n.toFixed(3);
+      // start active
+      tracker.start();
+      hudS.textContent = 'active';
+      btnStart.disabled = true;
+      btnStop.disabled = false;
 
-                requestAnimationFrame(raf);
-            }
-            requestAnimationFrame(raf);
-        </script>
-    </body>
+      /* push velocity values to css variables on every frame */
+      function raf() {
+        const v = tracker.getVelocity();
+        const n = tracker.getNormalizedVelocity();
+        const a = Math.abs(n);
+        const pow = Math.min(1, Math.pow(a, 0.7) * 1.35);
+
+        document.body.style.setProperty('--scroll-velocity', n.toFixed(4));
+        document.body.style.setProperty('--scroll-velocity-abs', a.toFixed(4));
+        document.body.style.setProperty('--scroll-velocity-pow', pow.toFixed(4));
+
+        hudV.textContent = v.toFixed(3);
+        hudC.textContent = n.toFixed(3);
+
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    </script>
+  </body>
 </html>
