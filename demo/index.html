@@ -650,8 +650,8 @@
       const tracker = new ScrollVelocity({
         sampleMode: 'hybrid', // adaptive sampling (now default!)
         responsiveness: 1, // very responsive to new input
-        friction: 0.05, // low friction
-        attraction: 0.15, // gentle pull to zero
+        friction: 0.01, // low friction
+        attraction: 0.25, // gentle pull to zero
         threshold: 0.02, // low threshold for smooth trailing
         maxVelocity: 300, // higher ceiling for more dramatic effects
       });
