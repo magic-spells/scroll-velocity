@@ -28,7 +28,8 @@
           Arial,
           'Apple Color Emoji',
           'Segoe UI Emoji';
-        background: #090a1a radial-gradient(1200px 800px at 10% 10%, #1f2145 0%, #0f112b 40%, #090a1a 100%);
+        background: #090a1a
+          radial-gradient(1200px 800px at 10% 10%, #1f2145 0%, #0f112b 40%, #090a1a 100%);
         color: #fff;
         min-height: 100vh;
         overflow-x: hidden;
@@ -648,7 +649,7 @@
       // velocity tracker config (v0.2.0 API - intuitive parameters!)
       const tracker = new ScrollVelocity({
         sampleMode: 'hybrid', // adaptive sampling (now default!)
-        responsiveness: 0.9, // very responsive to new input
+        responsiveness: 1, // very responsive to new input
         friction: 0.05, // low friction
         attraction: 0.15, // gentle pull to zero
         threshold: 0.02, // low threshold for smooth trailing
