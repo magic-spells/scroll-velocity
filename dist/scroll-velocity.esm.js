@@ -19,7 +19,7 @@
 		target: document.body,   // element that will receive the css vars
 		sampleMode: 'hybrid',   // 'hybrid' | 'delta' | 'time' (hybrid is the recommended default)
 		responsiveness: 0.35,   // higher = more responsive to new scroll input, lower = smoother/laggier
-		friction: 0.92,          // how much velocity persists per frame (0..1)
+		friction: 0.08,          // friction strength; higher = more friction (faster stopping)
 		attraction: 0.04,        // strength of pull toward zero (0..1); higher = stronger pull
 		threshold: 0.02,         // stop when |velocity| < threshold
 		maxVelocity: 200,        // clamp for raw velocity; normalization uses this value
@@ -35,7 +35,7 @@
  * @property {HTMLElement} [target=document.body] element to receive css variables
  * @property {('delta'|'time'|'hybrid')} [sampleMode='hybrid'] how to sample scroll input; 'hybrid' adapts based on event timing, 'delta' mimics the old feel
  * @property {number} [responsiveness=0.35] how quickly it responds to new scroll input; higher = more responsive
- * @property {number} [friction=0.92] multiplicative decay per frame (0..1)
+ * @property {number} [friction=0.08] friction strength; higher = more friction (faster stopping) (0..1)
  * @property {number} [attraction=0.04] how strongly it's pulled toward zero; higher = stronger pull to zero (0..1)
  * @property {number} [threshold=0.02] below this absolute velocity, snap to zero
  * @property {number} [maxVelocity=200] absolute clamp for the raw velocity (used for normalization)
@@ -69,7 +69,7 @@ class ScrollVelocity {
 		this.responsiveness =
 			typeof options.responsiveness === "number" ? options.responsiveness : 0.35;
 		this.friction =
-			typeof options.friction === "number" ? options.friction : 0.92;
+			typeof options.friction === "number" ? options.friction : 0.08;
 		this.attraction =
 			typeof options.attraction === "number" ? options.attraction : 0.04;
 		this.threshold =
@@ -237,7 +237,7 @@ class ScrollVelocity {
 				window.matchMedia("(prefers-reduced-motion: reduce)").matches
 			)
 		) {
-			this._velocity *= this.friction;
+			this._velocity *= (1 - this.friction); // inverted: higher friction = more stopping power
 			this._velocity *= (1 - this.attraction); // inverted: higher attraction = stronger pull to zero
 			if (Math.abs(this._velocity) < this.threshold) this._velocity = 0;
 		}

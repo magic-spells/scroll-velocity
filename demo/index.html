@@ -27,12 +27,91 @@
         color: #fff;
         min-height: 100vh;
         overflow-x: hidden;
+        position: relative;
 
         /* css variables driven by js */
         --scroll-velocity: 0;
         --scroll-velocity-abs: 0;
         --scroll-velocity-pow: 0;
         --scroll-velocity-raw: 0;
+      }
+
+      /* floating background gradients that respond to scroll velocity */
+      .bg-gradients {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: -1;
+        overflow: hidden;
+      }
+      .bg-gradient {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.08;
+        filter: blur(calc(var(--scroll-velocity-abs) * 15px));
+        transition:
+          transform 0.1s ease-out,
+          filter 0.1s ease-out;
+        will-change: transform, filter;
+      }
+      /* individual gradient positioning and colors */
+      .bg-gradient:nth-child(1) {
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, #4ecdc4 0%, transparent 70%);
+        top: 15%;
+        left: 5%;
+        transform: translate(
+          calc(var(--vx, -150px) * var(--scroll-velocity) * 0.8),
+          calc(var(--vy, 200px) * var(--scroll-velocity) * 0.8)
+        );
+      }
+      .bg-gradient:nth-child(2) {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #a18cd1 0%, transparent 70%);
+        top: 40%;
+        right: 8%;
+        transform: translate(
+          calc(var(--vx, 180px) * var(--scroll-velocity) * 0.6),
+          calc(var(--vy, -120px) * var(--scroll-velocity) * 0.6)
+        );
+      }
+      .bg-gradient:nth-child(3) {
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, #ff7a7a 0%, transparent 70%);
+        top: 70%;
+        left: 15%;
+        transform: translate(
+          calc(var(--vx, -200px) * var(--scroll-velocity) * 0.7),
+          calc(var(--vy, -180px) * var(--scroll-velocity) * 0.7)
+        );
+      }
+      .bg-gradient:nth-child(4) {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, #ffd36b 0%, transparent 70%);
+        top: 25%;
+        left: 60%;
+        transform: translate(
+          calc(var(--vx, -120px) * var(--scroll-velocity) * 0.9),
+          calc(var(--vy, 160px) * var(--scroll-velocity) * 0.9)
+        );
+      }
+      .bg-gradient:nth-child(5) {
+        width: 650px;
+        height: 650px;
+        background: radial-gradient(circle, #89f7fe 0%, transparent 70%);
+        top: 85%;
+        right: 20%;
+        transform: translate(
+          calc(var(--vx, 140px) * var(--scroll-velocity) * 0.5),
+          calc(var(--vy, -220px) * var(--scroll-velocity) * 0.5)
+        );
       }
 
       .container {
@@ -296,9 +375,9 @@
         height: 100%;
       }
       .skew-box {
-        border-radius: 8px;
+        border-radius: 2px;
         background: var(--bg, #446);
-        transform: skewX(calc(var(--k, 1) * var(--scroll-velocity) * 18deg));
+        transform: skewX(calc(var(--k, 1) * var(--scroll-velocity) * 25deg));
         box-shadow:
           0 12px 28px rgba(0, 0, 0, 0.35),
           inset 0 0 26px rgba(255, 255, 255, 0.18);
@@ -311,7 +390,7 @@
       .skew-box:nth-child(8),
       .skew-box:nth-child(9),
       .skew-box:nth-child(10) {
-        transform: skewX(calc(var(--k, 1) * var(--scroll-velocity) * -18deg));
+        transform: skewX(calc(var(--k, 1) * var(--scroll-velocity) * -25deg));
       }
 
       /* drag grid section */
@@ -379,6 +458,15 @@
     </style>
   </head>
   <body>
+    <!-- floating background gradients -->
+    <div class="bg-gradients">
+      <div class="bg-gradient"></div>
+      <div class="bg-gradient"></div>
+      <div class="bg-gradient"></div>
+      <div class="bg-gradient"></div>
+      <div class="bg-gradient"></div>
+    </div>
+
     <div class="hud">
       <div><b>velocity:</b> <span id="hud-v">0.000</span></div>
       <div><b>css:</b> <span id="hud-c">0.000</span></div>
@@ -552,12 +640,12 @@
       buildSkewGrid(document.getElementById('skewgrid'));
       buildDragGrid(document.getElementById('draggrid'));
 
-      // velocity tracker config (v0.2.0 API - responsive & smooth!)
+      // velocity tracker config (v0.2.0 API - intuitive parameters!)
       const tracker = new ScrollVelocity({
         sampleMode: 'hybrid',        // adaptive sampling (now default!)
-        responsiveness: 0.7,         // very responsive to new input
-        friction: 0.95,              // good velocity persistence 
-        attraction: 0.15,            // gentle pull to zero (was 0.9 - too strong!)
+        responsiveness: 0.8,         // very responsive to new input
+        friction: 0.05,              // low friction = smooth persistence (was 0.95 inverted)
+        attraction: 0.15,            // gentle pull to zero
         threshold: 0.02,             // low threshold for smooth trailing
         maxVelocity: 300,            // higher ceiling for more dramatic effects
       });

@@ -43,7 +43,7 @@ const tracker = new ScrollVelocity({
   target: document.body,       // element that receives CSS variables
   sampleMode: 'hybrid',        // 'hybrid' (adaptive), 'delta' (punchy), 'time' (consistent)
   responsiveness: 0.35,        // higher = more responsive to scroll input
-  friction: 0.95,              // velocity persistence per frame (0-1)
+  friction: 0.05,              // friction strength (low = smooth persistence) (0-1)
   attraction: 0.04,            // pull toward zero strength (higher = stronger pull)
   threshold: 0.02,             // stop when velocity drops below this
   maxVelocity: 200,            // clamp raw velocity, used for normalization
@@ -65,7 +65,7 @@ All options are optional with sensible defaults:
 - `target` _(HTMLElement)_ - Element to receive CSS variables (default: `document.body`)
 - `sampleMode` _('hybrid'|'delta'|'time')_ - Sampling method; 'hybrid' adapts based on timing (default), 'delta' for punchy feel, 'time' for consistent px/ms
 - `responsiveness` _(number)_ - How quickly it responds to scroll input; higher = more responsive (default: 0.35)
-- `friction` _(number)_ - Velocity decay per frame, 0-1 (default: 0.92)
+- `friction` _(number)_ - Friction strength; higher = more friction (faster stopping), 0-1 (default: 0.08)
 - `attraction` _(number)_ - Pull toward zero strength; higher = stronger pull (default: 0.04)
 - `threshold` _(number)_ - Stop threshold for absolute velocity (default: 0.02)
 - `maxVelocity` _(number)_ - Clamp for raw velocity, used for normalization (default: 200)
@@ -148,7 +148,7 @@ requestAnimationFrame(onAnimationFrame);
 // Update settings at runtime
 tracker.setOptions({
   responsiveness: 0.5,
-  friction: 0.95
+  friction: 0.1
 });
 ```
 
@@ -161,6 +161,7 @@ tracker.setOptions({
 ### Parameter Changes
 - ✅ `dampening` → `responsiveness` (same values, clearer meaning)
 - ✅ `attraction` behavior inverted (higher = stronger pull to zero)
+- ✅ `friction` behavior inverted (higher = more friction/faster stopping)
 - ✅ `sampleMode: 'hybrid'` is now the default (was 'delta')
 
 ### Migration Guide
@@ -169,6 +170,7 @@ tracker.setOptions({
 new ScrollVelocity({
   sampleMode: 'delta',    // was default
   dampening: 0.6,         // confusing name
+  friction: 0.9,          // high = smooth (backwards!)
   attraction: 0.2,        // low = strong pull (backwards!)
 });
 
@@ -176,6 +178,7 @@ new ScrollVelocity({
 new ScrollVelocity({
   sampleMode: 'hybrid',   // new default - adaptive!
   responsiveness: 0.6,    // same value, clearer name
+  friction: 0.1,          // high = more friction (intuitive!)
   attraction: 0.8,        // high = strong pull (intuitive!)
 });
 ```
