@@ -642,12 +642,12 @@
 
       // velocity tracker config (v0.2.0 API - intuitive parameters!)
       const tracker = new ScrollVelocity({
-        sampleMode: 'hybrid',        // adaptive sampling (now default!)
-        responsiveness: 0.8,         // very responsive to new input
-        friction: 0.05,              // low friction = smooth persistence (was 0.95 inverted)
-        attraction: 0.15,            // gentle pull to zero
-        threshold: 0.02,             // low threshold for smooth trailing
-        maxVelocity: 300,            // higher ceiling for more dramatic effects
+        sampleMode: 'hybrid', // adaptive sampling (now default!)
+        responsiveness: 0.9, // very responsive to new input
+        friction: 0.05, // low friction
+        attraction: 0.15, // gentle pull to zero
+        threshold: 0.02, // low threshold for smooth trailing
+        maxVelocity: 300, // higher ceiling for more dramatic effects
       });
 
       // hud controls
